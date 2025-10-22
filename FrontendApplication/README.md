@@ -1,82 +1,76 @@
-# Lightweight React Template for KAVIA
+# Network Devices Frontend (React)
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+A responsive and accessible React UI for managing network devices. Users can create, view, edit, delete, search, filter, and sort devices, view device details, and refresh status. The app reads the backend API base URL from environment variables and supports an optional mock mode for local UI testing.
 
 ## Features
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- CRUD for devices (name, ip, type, location, status)
+- Devices list with search, filter (type/status), and sort (name/ip/type/location/status)
+- Device detail page with status indicator and refresh (ping) action
+- Accessible forms with validation (required fields, IP format), ARIA attributes, keyboard navigation
+- Global success/error toasts
+- Responsive layout with basic styling
+- Environment-configured API base URL with optional mock mode
 
-## Getting Started
+## Quick Start
 
-In the project directory, you can run:
+1. Install dependencies
+   npm install
 
-### `npm start`
+2. Configure environment
+   - Copy `.env.example` to `.env` and update values as needed.
+   - For Create React App:
+     - REACT_APP_API_BASE_URL=http://localhost:5000
+     - REACT_APP_USE_MOCKS=false (or true to use in-memory mocks)
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+3. Start the app
+   npm start
 
-### `npm test`
+   Open http://localhost:3000
 
-Launches the test runner in interactive watch mode.
+## Environment Variables
 
-### `npm run build`
+- REACT_APP_API_BASE_URL
+  - Base URL for the backend API, e.g., http://localhost:5000
+- REACT_APP_USE_MOCKS
+  - When "true", the app uses an in-memory mock API instead of calling the backend
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+If you migrate to Vite later, use VITE_API_BASE_URL and VITE_USE_MOCKS.
 
-## Customization
+## API Endpoints (expected)
 
-### Colors
+- GET /devices
+- GET /devices/:id
+- POST /devices
+- PUT /devices/:id
+- DELETE /devices/:id
+- POST /devices/:id/ping (optional) — triggers status refresh
 
-The main brand colors are defined as CSS variables in `src/App.css`:
+## Pages/Routes
 
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
+- /devices — Devices list (search/filter/sort, create link)
+- /devices/new — Create device form
+- /devices/:id — Device detail with status refresh
+- /devices/:id/edit — Edit device form
 
-### Components
+## Accessibility
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+- Proper labels, roles, aria-live regions for toasts and form errors
+- Keyboard focus management
+- Semantic HTML
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+## Development Notes
 
-## Learn More
+- Mock API is implemented under src/api/devices.js and enabled via REACT_APP_USE_MOCKS=true.
+- The API client reads process.env.REACT_APP_API_BASE_URL by default.
+- Validation utilities live in src/utils/validation.js.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Scripts
 
-### Code Splitting
+- npm start — start development server
+- npm test — run tests
+- npm run build — production build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## License
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT

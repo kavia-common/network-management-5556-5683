@@ -29,6 +29,11 @@ A responsive and accessible React UI for managing network devices. Users can cre
 
    Open http://localhost:3000
 
+Preview links:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+- Backend API docs (Swagger UI): http://localhost:3001/docs
+
 ## Environment Variables
 
 - REACT_APP_API_BASE_URL
@@ -43,6 +48,15 @@ A responsive and accessible React UI for managing network devices. Users can cre
 A sample configuration is provided in .env.example.
 
 If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PAGINATION_PAGE_SIZE_DEFAULT.
+
+## Verifying Connectivity
+
+- Start backend on port 3001 (ensure Mongo is reachable and MONGO_URI is set).
+- Start frontend on port 3000 with `REACT_APP_API_BASE_URL=http://localhost:3001`.
+- Navigate to /devices:
+  - If the database is empty, create a new device via the UI.
+  - Check that list, detail, edit, delete, and "Refresh Status" work.
+- If you prefer to test UI only, set `REACT_APP_USE_MOCKS=true` and restart the frontend; API calls will be mocked in-memory.
 
 ## Backend Compatibility Notes
 

@@ -19,9 +19,9 @@ A responsive and accessible React UI for managing network devices. Users can cre
 
 2. Configure environment
    - Copy `.env.example` to `.env` and update values as needed.
-   - For Create React App:
-     - REACT_APP_API_BASE_URL=http://localhost:5000
-     - REACT_APP_USE_MOCKS=false (or true to use in-memory mocks)
+   - For Create React App (CRA), typical local setup if frontend runs on 3000 and backend on 3001:
+     - REACT_APP_API_BASE_URL=http://localhost:3001
+     - REACT_APP_USE_MOCKS=false (set true to use in-memory mocks)
      - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT=10
 
 3. Start the app
@@ -32,13 +32,28 @@ A responsive and accessible React UI for managing network devices. Users can cre
 ## Environment Variables
 
 - REACT_APP_API_BASE_URL
-  - Base URL for the backend API, e.g., http://localhost:5000
+  - Base URL for the backend API (e.g., http://localhost:3001).
+  - If omitted, requests are made relative to the current origin (useful if CRA proxy is configured).
 - REACT_APP_USE_MOCKS
-  - When "true", the app uses an in-memory mock API instead of calling the backend
+  - When "true", the app uses an in-memory mock API instead of calling the backend.
+  - Useful for UI-only development without a running backend.
 - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT
   - Integer default page size for the devices list pagination UI. Defaults to 10 if unset.
 
+A sample configuration is provided in .env.example.
+
 If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PAGINATION_PAGE_SIZE_DEFAULT.
+
+## Backend Compatibility Notes
+
+- Pagination contract (server-side):
+  - GET /devices supports query params: ?page=<int>&limit=<int>
+  - Response shape must be:
+    { items: Device[], total: number, page: number, limit: number }
+- Client fallback:
+  - If the backend returns a plain array, the frontend will compute pagination client-side while keeping the UI consistent.
+- ID mapping:
+  - The frontend maps device identifiers from either id or _id to id uniformly.
 
 ## API Endpoints (expected)
 
@@ -48,14 +63,6 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 - PUT /devices/:id
 - DELETE /devices/:id
 - POST /devices/:id/ping (optional) — triggers status refresh
-
-### Pagination contract
-
-If backend supports pagination on GET /devices, it should accept:
-- Query params: ?page=<int>&limit=<int>
-- Response shape: { items: Device[], total: number, page: number, limit: number }
-
-If backend pagination is not available, the frontend automatically falls back to client-side pagination by fetching the full list and slicing in-memory. The UI remains consistent in both modes.
 
 ## Pages/Routes
 
@@ -74,7 +81,7 @@ If backend pagination is not available, the frontend automatically falls back to
 ## Development Notes
 
 - Mock API is implemented under src/api/devices.js and enabled via REACT_APP_USE_MOCKS=true.
-- The API client reads process.env.REACT_APP_API_BASE_URL by default.
+- The API client reads REACT_APP_API_BASE_URL if set, otherwise uses same-origin relative paths.
 - Validation utilities live in src/utils/validation.js.
 - Pagination component lives at src/components/Common/Pagination.js and can be reused in other lists.
 

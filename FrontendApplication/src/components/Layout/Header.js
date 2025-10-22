@@ -23,7 +23,7 @@ export default function Header({ theme, onToggleTheme }) {
       <Link to="/devices" className="title" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 700 }}>
         Network Manager
       </Link>
-      <nav aria-label="Primary" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <nav aria-label="Primary" role="navigation" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <NavLink
           to="/devices"
           style={({ isActive }) => ({

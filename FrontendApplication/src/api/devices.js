@@ -13,16 +13,52 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 const mapToServer = (d) => ({ ...d });
 const mapFromServer = (d) => ({ ...d, id: d.id ?? d._id });
 
+/**
+ * Convert server response to a normalized pagination shape.
+ */
+function normalizeServerPagination(res) {
+  // Expect shape: { items, total, page, limit }
+  if (res && Array.isArray(res.items) && typeof res.total === 'number') {
+    return {
+      items: res.items.map(mapFromServer),
+      total: res.total,
+      page: Number(res.page) || 1,
+      limit: Number(res.limit) || res.items.length || 10,
+      serverPaginated: true,
+    };
+  }
+  // Fallback if server returned an array
+  if (Array.isArray(res)) {
+    return {
+      items: res.map(mapFromServer),
+      total: res.length,
+      page: 1,
+      limit: res.length,
+      serverPaginated: false,
+    };
+  }
+  // Unknown; return empty
+  return { items: [], total: 0, page: 1, limit: 10, serverPaginated: false };
+}
+
 // PUBLIC_INTERFACE
-export async function listDevices() {
-  /** Fetch devices list from backend or mock store. */
+export async function listDevices({ page, limit } = {}) {
+  /**
+   * Fetch devices list from backend or mock store.
+   * If backend supports pagination, it should accept ?page & ?limit and return { items, total, page, limit }.
+   * Otherwise, returns the full array. Caller can client-paginate as fallback.
+   */
   const mock = getUseMocks();
   if (mock) {
     await delay(200);
-    return [...mockDevices];
+    const items = [...mockDevices];
+    return { items, total: items.length, page: Number(page) || 1, limit: Number(limit) || items.length, serverPaginated: false };
   }
-  const data = await http.request('/devices', { method: 'GET' });
-  return Array.isArray(data) ? data.map(mapFromServer) : [];
+  const qs = typeof page !== 'undefined' && typeof limit !== 'undefined'
+    ? `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`
+    : '';
+  const data = await http.request(`/devices${qs}`, { method: 'GET' });
+  return normalizeServerPagination(data);
 }
 
 // PUBLIC_INTERFACE

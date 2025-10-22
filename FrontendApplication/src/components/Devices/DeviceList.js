@@ -5,25 +5,46 @@ import DeviceFilters from './DeviceFilters';
 import DeviceTable from './DeviceTable';
 import Spinner from '../Common/Spinner';
 import { useToastContext } from '../../hooks/useToast';
+import Pagination from '../Common/Pagination';
 
 // PUBLIC_INTERFACE
 export default function DeviceList() {
-  /** Displays device list with search, filters, sort and delete actions. */
-  const [devices, setDevices] = useState([]);
+  /** Displays device list with search, filters, sort, delete and pagination with server/client fallback. */
+  const defaultPageSize = Number(process.env.REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT || 10);
+
+  const [allDevices, setAllDevices] = useState([]); // for client fallback
   const [loading, setLoading] = useState(true);
+
+  // filters and sort (persist across pages)
   const [q, setQ] = useState('');
   const [type, setType] = useState('all');
   const [status, setStatus] = useState('all');
   const [sortKey, setSortKey] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
+
+  // pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(defaultPageSize);
+  const [total, setTotal] = useState(0);
+  const [serverPaginated, setServerPaginated] = useState(false);
+
   const { addToast } = useToastContext();
   const navigate = useNavigate();
 
-  const load = async () => {
+  const load = async (targetPage = page, targetLimit = pageSize) => {
     try {
       setLoading(true);
-      const data = await listDevices();
-      setDevices(data);
+      const res = await listDevices({ page: targetPage, limit: targetLimit });
+      setServerPaginated(!!res.serverPaginated);
+      setTotal(Number(res.total || 0));
+
+      if (res.serverPaginated) {
+        // server returns current page items
+        setAllDevices(res.items || []);
+      } else {
+        // server returned full list; store all for client-side slicing
+        setAllDevices(res.items || res || []);
+      }
     } catch (e) {
       addToast({ type: 'error', message: e.message || 'Failed to load devices' });
     } finally {
@@ -31,11 +52,30 @@ export default function DeviceList() {
     }
   };
 
-  useEffect(() => { load(); }, []); // initial load
+  useEffect(() => { load(1, pageSize); /* initial load with page=1 */ }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filtered = useMemo(() => {
+  // Re-load when pagination changes if server handles pagination.
+  useEffect(() => {
+    if (serverPaginated) {
+      load(page, pageSize);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, serverPaginated]);
+
+  // Reset page to 1 when filters/search/sort change
+  useEffect(() => {
+    setPage(1);
+  }, [q, type, status, sortKey, sortDir]);
+
+  // Filter + sort + client-side paginate (when server doesn't paginate)
+  const { currentPageItems, filteredCount } = useMemo(() => {
     const term = q.trim().toLowerCase();
-    let rows = devices.filter((d) => {
+    // If server paginated, assume allDevices are already filtered/paged server-side
+    if (serverPaginated) {
+      return { currentPageItems: allDevices, filteredCount: total };
+    }
+
+    let rows = allDevices.filter((d) => {
       const termMatch = !term || [d.name, d.ip, d.location, d.type, d.status].some((v) => String(v).toLowerCase().includes(term));
       const typeMatch = type === 'all' || d.type === type;
       const statusMatch = status === 'all' || d.status === status;
@@ -48,15 +88,29 @@ export default function DeviceList() {
       if (av > bv) return sortDir === 'asc' ? 1 : -1;
       return 0;
     });
-    return rows;
-  }, [devices, q, type, status, sortKey, sortDir]);
+
+    const totalFiltered = rows.length;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const sliced = rows.slice(start, end);
+
+    return { currentPageItems: sliced, filteredCount: totalFiltered };
+  }, [allDevices, serverPaginated, total, q, type, status, sortKey, sortDir, page, pageSize]);
+
+  // Keep total in sync for client-side
+  useEffect(() => {
+    if (!serverPaginated) {
+      setTotal(filteredCount);
+    }
+  }, [filteredCount, serverPaginated]);
 
   const onDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this device?')) return;
     try {
       await deleteDevice(id);
       addToast({ type: 'success', message: 'Device deleted' });
-      await load();
+      // reload current page; if client-side, just refetch baseline
+      await load(serverPaginated ? page : 1, pageSize);
     } catch (e) {
       addToast({ type: 'error', message: e.message || 'Delete failed' });
     }
@@ -80,12 +134,20 @@ export default function DeviceList() {
       />
 
       <DeviceTable
-        devices={filtered}
+        devices={currentPageItems}
         onDelete={onDelete}
         onRowClick={(id) => navigate(`/devices/${id}`)}
       />
 
-      {filtered.length === 0 && (
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={(p) => setPage(p)}
+        onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+      />
+
+      {total === 0 && (
         <p role="status" aria-live="polite" style={{ marginTop: 16 }}>No devices match your criteria.</p>
       )}
     </section>

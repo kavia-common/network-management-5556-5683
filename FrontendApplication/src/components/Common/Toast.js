@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useToastContext } from '../../hooks/useToast';
 
 // PUBLIC_INTERFACE
-export default function Toast() {
+function Toast() {
   /** Renders global toasts in an aria-live region. */
   const { toasts, removeToast } = useToastContext();
   return (
@@ -62,3 +62,6 @@ export default function Toast() {
     </div>
   );
 }
+
+// PUBLIC_INTERFACE
+export default memo(Toast);

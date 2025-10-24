@@ -38,6 +38,9 @@ Performance tips:
   or temporarily set GENERATE_SOURCEMAP=true in your environment.
 - Use a lockfile (package-lock.json) to stabilize dependency versions and improve install speeds in CI.
 - The included .npmrc optimizes npm installs for local dev and CI.
+- For measuring runtime performance in dev, you can disable React StrictMode double-invocation by setting:
+  REACT_APP_DISABLE_STRICT_MODE=true
+  This makes dev behavior closer to production, but remember to re-enable StrictMode for development best practices.
 
 Preview links:
 - Frontend: http://localhost:3000

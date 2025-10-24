@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 // PUBLIC_INTERFACE
-export default function Header({ theme, onToggleTheme }) {
+function Header({ theme, onToggleTheme }) {
   /** App header with navigation and theme toggle. */
   return (
     <header
@@ -55,3 +55,6 @@ export default function Header({ theme, onToggleTheme }) {
     </header>
   );
 }
+
+// PUBLIC_INTERFACE
+export default memo(Header);

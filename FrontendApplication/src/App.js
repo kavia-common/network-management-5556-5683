@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import RoutesRoot from './routes/Routes';
@@ -16,9 +16,9 @@ function App() {
   }, [theme]);
 
   // PUBLIC_INTERFACE
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  }, []);
 
   return (
     <BrowserRouter>

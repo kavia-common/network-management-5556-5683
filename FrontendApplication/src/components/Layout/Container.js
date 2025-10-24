@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 // PUBLIC_INTERFACE
-export default function Container({ children }) {
+function Container({ children }) {
   /** Page content container with responsive padding and max width. */
   return (
     <main
@@ -18,3 +18,6 @@ export default function Container({ children }) {
     </main>
   );
 }
+
+// PUBLIC_INTERFACE
+export default memo(Container);

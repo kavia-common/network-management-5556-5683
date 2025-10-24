@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 // PUBLIC_INTERFACE
-export default function DeviceTable({ devices, onDelete, onRowClick }) {
+function DeviceTable({ devices, onDelete, onRowClick }) {
   /** Table of devices with view/edit/delete actions and status indicators. Includes compact mode on small screens. */
   return (
     <div role="region" aria-label="Devices table" style={{ overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: 8 }}>
@@ -19,37 +19,7 @@ export default function DeviceTable({ devices, onDelete, onRowClick }) {
         </thead>
         <tbody>
           {devices.map((d) => (
-            <tr
-              key={d.id}
-              tabIndex={0}
-              onKeyDown={(e)=>{ if(e.key==='Enter'){ onRowClick(d.id); }}}
-              onClick={()=>onRowClick(d.id)}
-              style={{ cursor: 'pointer' }}
-            >
-              <td style={td}>
-                <span title={d.name} className="truncate">{d.name}</span>
-                <div className="muted show-sm" style={{ fontSize: 12, marginTop: 4 }}>
-                  {d.ip} • {cap(d.type)} • {d.location}
-                </div>
-              </td>
-              <td style={td}>
-                <span title={d.ip} className="truncate">{d.ip}</span>
-              </td>
-              <td style={td} className="hide-sm">{cap(d.type)}</td>
-              <td style={td} className="hide-md">
-                <span title={d.location} className="truncate">{d.location}</span>
-              </td>
-              <td style={td}>
-                <span aria-label={`Status ${d.status}`} style={{ ...badge, background: d.status === 'online' ? '#e6ffed' : '#ffe5e5', borderColor: d.status === 'online' ? '#2e7d32' : '#d93025', color: '#1a1a1a' }}>
-                  {cap(d.status)}
-                </span>
-              </td>
-              <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={(e)=> e.stopPropagation()}>
-                <Link to={`/devices/${d.id}`} className="btn" style={btn}>View</Link>
-                <Link to={`/devices/${d.id}/edit`} className="btn" style={btnSecondary}>Edit</Link>
-                <button onClick={() => onDelete(d.id)} className="btn" style={btnDanger} aria-label={`Delete ${d.name}`}>Delete</button>
-              </td>
-            </tr>
+            <DeviceRow key={d.id} d={d} onDelete={onDelete} onRowClick={onRowClick} />
           ))}
         </tbody>
       </table>
@@ -76,6 +46,44 @@ export default function DeviceTable({ devices, onDelete, onRowClick }) {
     </div>
   );
 }
+
+const DeviceRow = memo(function DeviceRow({ d, onDelete, onRowClick }) {
+  return (
+    <tr
+      tabIndex={0}
+      onKeyDown={(e)=>{ if(e.key==='Enter'){ onRowClick(d.id); }}}
+      onClick={()=>onRowClick(d.id)}
+      style={{ cursor: 'pointer' }}
+    >
+      <td style={td}>
+        <span title={d.name} className="truncate">{d.name}</span>
+        <div className="muted show-sm" style={{ fontSize: 12, marginTop: 4 }}>
+          {d.ip} • {cap(d.type)} • {d.location}
+        </div>
+      </td>
+      <td style={td}>
+        <span title={d.ip} className="truncate">{d.ip}</span>
+      </td>
+      <td style={td} className="hide-sm">{cap(d.type)}</td>
+      <td style={td} className="hide-md">
+        <span title={d.location} className="truncate">{d.location}</span>
+      </td>
+      <td style={td}>
+        <span aria-label={`Status ${d.status}`} style={{ ...badge, background: d.status === 'online' ? '#e6ffed' : '#ffe5e5', borderColor: d.status === 'online' ? '#2e7d32' : '#d93025', color: '#1a1a1a' }}>
+          {cap(d.status)}
+        </span>
+      </td>
+      <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={(e)=> e.stopPropagation()}>
+        <Link to={`/devices/${d.id}`} className="btn" style={btn}>View</Link>
+        <Link to={`/devices/${d.id}/edit`} className="btn" style={btnSecondary}>Edit</Link>
+        <button onClick={() => onDelete(d.id)} className="btn" style={btnDanger} aria-label={`Delete ${d.name}`}>Delete</button>
+      </td>
+    </tr>
+  );
+});
+
+// PUBLIC_INTERFACE
+export default memo(DeviceTable);
 
 const cap = (s='') => s.charAt(0).toUpperCase() + s.slice(1);
 

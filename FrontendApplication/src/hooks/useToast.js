@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 const ToastContext = createContext(null);
 
@@ -7,18 +7,18 @@ export function ToastProvider({ children }) {
   /** Provides toast context to the application with add/remove methods. */
   const [toasts, setToasts] = useState([]);
 
-  const addToast = ({ type = 'success', message }) => {
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const addToast = useCallback(({ type = 'success', message }) => {
     const id = String(Date.now() + Math.random());
     setToasts((prev) => [...prev, { id, type, message }]);
     // auto dismiss
     setTimeout(() => removeToast(id), 5000);
-  };
+  }, [removeToast]);
 
-  const removeToast = (id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const value = useMemo(() => ({ toasts, addToast, removeToast }), [toasts]);
+  const value = useMemo(() => ({ toasts, addToast, removeToast }), [toasts, addToast, removeToast]);
 
   return (
     <ToastContext.Provider value={value}>

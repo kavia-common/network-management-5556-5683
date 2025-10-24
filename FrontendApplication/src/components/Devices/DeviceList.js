@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { listDevices, deleteDevice } from '../../api/devices';
 import DeviceFilters from './DeviceFilters';
@@ -6,6 +6,7 @@ import DeviceTable from './DeviceTable';
 import Spinner from '../Common/Spinner';
 import { useToastContext } from '../../hooks/useToast';
 import Pagination from '../Common/Pagination';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 
 // PUBLIC_INTERFACE
 export default function DeviceList() {
@@ -17,6 +18,7 @@ export default function DeviceList() {
 
   // filters and sort (persist across pages)
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q, 250);
   const [type, setType] = useState('all');
   const [status, setStatus] = useState('all');
   const [sortKey, setSortKey] = useState('name');
@@ -31,7 +33,12 @@ export default function DeviceList() {
   const { addToast } = useToastContext();
   const navigate = useNavigate();
 
-  const load = async (targetPage = page, targetLimit = pageSize) => {
+  // prevent overlapping loads
+  const loadingRef = useRef(false);
+
+  const load = useCallback(async (targetPage = page, targetLimit = pageSize) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     try {
       setLoading(true);
       const res = await listDevices({ page: targetPage, limit: targetLimit });
@@ -49,27 +56,27 @@ export default function DeviceList() {
       addToast({ type: 'error', message: e.message || 'Failed to load devices' });
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  };
+  }, [addToast, page, pageSize]);
 
-  useEffect(() => { load(1, pageSize); /* initial load with page=1 */ }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(1, pageSize); /* initial load with page=1 */ }, [load, pageSize]);
 
   // Re-load when pagination changes if server handles pagination.
   useEffect(() => {
     if (serverPaginated) {
       load(page, pageSize);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, serverPaginated]);
+  }, [page, pageSize, serverPaginated, load]);
 
   // Reset page to 1 when filters/search/sort change
   useEffect(() => {
     setPage(1);
-  }, [q, type, status, sortKey, sortDir]);
+  }, [debouncedQ, type, status, sortKey, sortDir]);
 
   // Filter + sort + client-side paginate (when server doesn't paginate)
   const { currentPageItems, filteredCount } = useMemo(() => {
-    const term = q.trim().toLowerCase();
+    const term = debouncedQ.trim().toLowerCase();
     // If server paginated, assume allDevices are already filtered/paged server-side
     if (serverPaginated) {
       return { currentPageItems: allDevices, filteredCount: total };
@@ -95,7 +102,7 @@ export default function DeviceList() {
     const sliced = rows.slice(start, end);
 
     return { currentPageItems: sliced, filteredCount: totalFiltered };
-  }, [allDevices, serverPaginated, total, q, type, status, sortKey, sortDir, page, pageSize]);
+  }, [allDevices, serverPaginated, total, debouncedQ, type, status, sortKey, sortDir, page, pageSize]);
 
   // Keep total in sync for client-side
   useEffect(() => {
@@ -104,7 +111,7 @@ export default function DeviceList() {
     }
   }, [filteredCount, serverPaginated]);
 
-  const onDelete = async (id) => {
+  const onDelete = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to delete this device?')) return;
     try {
       await deleteDevice(id);
@@ -114,7 +121,9 @@ export default function DeviceList() {
     } catch (e) {
       addToast({ type: 'error', message: e.message || 'Delete failed' });
     }
-  };
+  }, [addToast, load, page, pageSize, serverPaginated]);
+
+  const onRowClick = useCallback((id) => navigate(`/devices/${id}`), [navigate]);
 
   if (loading) return <Spinner label="Loading devices..." />;
 
@@ -136,14 +145,14 @@ export default function DeviceList() {
       <DeviceTable
         devices={currentPageItems}
         onDelete={onDelete}
-        onRowClick={(id) => navigate(`/devices/${id}`)}
+        onRowClick={onRowClick}
       />
 
       <Pagination
         page={page}
         pageSize={pageSize}
         total={total}
-        onPageChange={(p) => setPage(p)}
+        onPageChange={setPage}
         onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
       />
 

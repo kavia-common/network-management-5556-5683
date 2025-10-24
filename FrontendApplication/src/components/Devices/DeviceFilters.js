@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 // PUBLIC_INTERFACE
-export default function DeviceFilters({
+function DeviceFilters({
   q, setQ,
   type, setType,
   status, setStatus,
@@ -63,6 +63,9 @@ export default function DeviceFilters({
     </fieldset>
   );
 }
+
+// PUBLIC_INTERFACE
+export default memo(DeviceFilters);
 
 const wrapper = { border: '1px solid var(--border-color)', borderRadius: 8, padding: 12, marginBottom: 12 };
 const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, alignItems: 'end' };

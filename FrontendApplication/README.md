@@ -18,16 +18,26 @@ A responsive and accessible React UI for managing network devices. Users can cre
    npm install
 
 2. Configure environment
-   - Copy `.env.example` to `.env` and update values as needed.
-   - For Create React App (CRA), typical local setup if frontend runs on 3000 and backend on 3001:
+   - Copy `.env.example` to `.env` or `.env.development.local` and update values as needed.
+   - Typical local setup if frontend runs on 3000 and backend on 3001:
      - REACT_APP_API_BASE_URL=http://localhost:3001
      - REACT_APP_USE_MOCKS=false (set true to use in-memory mocks)
      - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT=10
+   - For faster dev startup, ensure `GENERATE_SOURCEMAP=false` (already set in `.env.development.local`).
 
-3. Start the app
+3. Start the app (fast mode recommended)
+   npm run start:fast
+   # or standard mode
    npm start
 
    Open http://localhost:3000
+
+Performance tips:
+- We disable source maps in development by default to speed up rebuilds. If you need to debug with source maps, use:
+  npm run build:analyze
+  or temporarily set GENERATE_SOURCEMAP=true in your environment.
+- Use a lockfile (package-lock.json) to stabilize dependency versions and improve install speeds in CI.
+- The included .npmrc optimizes npm installs for local dev and CI.
 
 Preview links:
 - Frontend: http://localhost:3000

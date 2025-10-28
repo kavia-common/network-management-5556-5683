@@ -18,6 +18,13 @@ const resolvedBaseURL = envBase || (isLocalDev3000 ? 'http://localhost:3001' : '
 // Log once on module load to help diagnose connectivity
 // eslint-disable-next-line no-console
 console.info(`API Base URL resolved to: ${resolvedBaseURL || 'same-origin'}`);
+try {
+  const mocks = String(process.env.REACT_APP_USE_MOCKS || '').toLowerCase() === 'true';
+  // eslint-disable-next-line no-console
+  console.info(`API Mock mode: ${mocks ? 'ENABLED' : 'disabled'}`);
+} catch (e) {
+  // ignore
+}
 
 /**
  * Minimal client wrapper around fetch with JSON handling and base URL.

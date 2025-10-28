@@ -4,9 +4,25 @@
  * - Fallback: if running at localhost:3000, use http://localhost:3001
  * - Otherwise, use same-origin (empty string -> relative paths)
  */
-const envBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
+const rawEnvBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
   ? process.env.REACT_APP_API_BASE_URL.trim()
   : '';
+
+/**
+ * Avoid double-protocol or trailing-slash mistakes. Normalize:
+ * - Strip trailing slashes
+ * - Ensure it's a fully qualified http(s) URL when provided
+ */
+function normalizeBaseUrl(u) {
+  if (!u) return '';
+  const noTrailing = u.replace(/\/*$/, '');
+  // If already absolute http(s) URL, keep as-is after slash strip
+  if (/^https?:\/\//i.test(noTrailing)) return noTrailing;
+  // If someone mistakenly set it to a relative path, return empty to use same-origin
+  return '';
+}
+
+const envBase = normalizeBaseUrl(rawEnvBase);
 
 const isLocalDev3000 = typeof window !== 'undefined'
   && window.location
@@ -16,8 +32,8 @@ const isLocalDev3000 = typeof window !== 'undefined'
 const resolvedBaseURL = envBase || (isLocalDev3000 ? 'http://localhost:3001' : '');
 
 // If no REACT_APP_API_BASE_URL is provided and not on localhost:3000, warn about same-origin usage.
+// eslint-disable-next-line no-console
 if (!envBase && !isLocalDev3000) {
-  // eslint-disable-next-line no-console
   console.warn('[API Client] REACT_APP_API_BASE_URL not set and not on localhost:3000. Using same-origin relative paths. Ensure your frontend is reverse-proxying to the backend or set REACT_APP_API_BASE_URL.');
 }
 
@@ -46,10 +62,12 @@ async function request(path, options = {}) {
   // Default to omit credentials to avoid unexpected CORS failures if backend does not allow cookies
   const { credentials = 'omit' } = options;
 
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  };
+  // Only set JSON Content-Type if we actually send a body; GET/DELETE should not force it
+  const baseHeaders = options.headers || {};
+  const hasBody = typeof options.body !== 'undefined' && options.body !== null;
+  const headers = hasBody
+    ? { 'Content-Type': 'application/json', ...baseHeaders }
+    : { ...baseHeaders };
 
   let res;
   try {
@@ -71,22 +89,41 @@ async function request(path, options = {}) {
     throw err;
   }
 
-  const contentType = res.headers.get('content-type') || '';
+  const contentType = (res.headers && res.headers.get && res.headers.get('content-type')) || '';
   let data = null;
 
-  if (contentType.includes('application/json')) {
-    data = await res.json().catch(() => null);
-  } else {
-    data = await res.text().catch(() => null);
+  // Read a small snippet for error diagnostics if needed
+  let textSnippet = '';
+  try {
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const txt = await res.text();
+      textSnippet = (txt || '').slice(0, 300);
+      data = txt;
+    }
+  } catch (parseErr) {
+    // eslint-disable-next-line no-console
+    console.warn('[API Parse Warning] Could not parse response body', { url, status: res.status, contentType });
   }
 
   if (!res.ok) {
-    const message = (data && (data.message || data.error)) || res.statusText || 'Request failed';
-    const err = new Error(message);
+    const message =
+      (data && typeof data === 'object' && (data.message || data.error)) ||
+      res.statusText ||
+      'Request failed';
+    const err = new Error(String(message));
     err.status = res.status;
     err.data = data;
     // eslint-disable-next-line no-console
-    console.error('[API Error]', { url, status: res.status, message, data });
+    console.error('[API Error]', {
+      url,
+      status: res.status,
+      statusText: res.statusText,
+      contentType,
+      message: String(message),
+      bodySnippet: textSnippet || (typeof data === 'string' ? data.slice(0, 300) : undefined),
+    });
     throw err;
   }
   return data;

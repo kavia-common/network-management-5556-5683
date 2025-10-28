@@ -18,12 +18,16 @@ const mapToServer = (d) => ({
   location: d.location,
   status: d.status,
 });
-const mapFromServer = (d) => ({
-  ...d,
-  id: d.id ?? d._id,
-  // Normalize field names between backend and frontend
-  ip: d.ip ?? d.ip_address ?? d.ipAddress,
-});
+const mapFromServer = (d) => {
+  const id = d.id ?? d._id;
+  const ip = d.ip ?? d.ip_address ?? d.ipAddress;
+  return {
+    ...d,
+    id,
+    ip,
+    ip_address: d.ip_address ?? ip, // keep both keys available for UI components
+  };
+};
 
 /**
  * Convert server response to a normalized pagination shape.
@@ -153,7 +157,13 @@ export async function deleteDevice(id) {
     mockDevices = mockDevices.filter((d) => d.id !== id);
     return { success: true };
   }
-  return http.request(`/devices/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  try {
+    const res = await http.request(`/devices/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    // Some servers return 204 with empty body; our client returns null in that case.
+    return res || { success: true };
+  } catch (e) {
+    throw e;
+  }
 }
 
 // PUBLIC_INTERFACE

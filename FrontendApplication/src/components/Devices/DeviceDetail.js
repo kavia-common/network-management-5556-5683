@@ -19,7 +19,10 @@ export default function DeviceDetail() {
       const data = await getDevice(id);
       setDevice(data);
     } catch (e) {
-      addToast({ type: 'error', message: e.message || 'Failed to load device' });
+      const guidance = ' Check API base URL, backend availability, and CORS.';
+      addToast({ type: 'error', message: (e && e.message ? e.message : 'Failed to load device') + guidance });
+      // eslint-disable-next-line no-console
+      console.error('[Device Detail Load Error]', e);
     } finally {
       setLoading(false);
     }
@@ -34,7 +37,10 @@ export default function DeviceDetail() {
       setDevice(updated);
       addToast({ type: 'success', message: 'Status refreshed' });
     } catch (e) {
-      addToast({ type: 'error', message: e.message || 'Status refresh failed' });
+      const guidance = ' Check API base URL, backend availability, and CORS.';
+      addToast({ type: 'error', message: (e && e.message ? e.message : 'Status refresh failed') + guidance });
+      // eslint-disable-next-line no-console
+      console.error('[Device Ping Error]', e);
     } finally {
       setRefreshing(false);
     }

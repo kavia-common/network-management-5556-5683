@@ -71,8 +71,11 @@ export default function DeviceForm({ mode = 'create' }) {
         navigate(`/devices/${created.id}`);
       }
     } catch (e) {
-      const apiMsg = (e && e.data && e.data.message) || e.message || 'Save failed';
-      addToast({ type: 'error', message: apiMsg });
+      const baseMsg = (e && e.data && e.data.message) || e.message || 'Save failed';
+      const guidance = ' Check API base URL, backend availability, and CORS.';
+      addToast({ type: 'error', message: baseMsg + guidance });
+      // eslint-disable-next-line no-console
+      console.error('[Device Save Error]', e);
     }
   };
 

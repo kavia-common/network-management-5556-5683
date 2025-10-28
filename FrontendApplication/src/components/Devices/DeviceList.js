@@ -53,7 +53,11 @@ export default function DeviceList() {
         setAllDevices(res.items || res || []);
       }
     } catch (e) {
-      addToast({ type: 'error', message: e.message || 'Failed to load devices' });
+      const guidance = ' Check API base URL, backend availability, and CORS.';
+      addToast({ type: 'error', message: (e && e.message ? e.message : 'Failed to load devices') + guidance });
+      // Also log to console with context
+      // eslint-disable-next-line no-console
+      console.error('[Devices Load Error]', e);
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -119,7 +123,10 @@ export default function DeviceList() {
       // reload current page; if client-side, just refetch baseline
       await load(serverPaginated ? page : 1, pageSize);
     } catch (e) {
-      addToast({ type: 'error', message: e.message || 'Delete failed' });
+      const guidance = ' Check API base URL, backend availability, and CORS.';
+      addToast({ type: 'error', message: (e && e.message ? e.message : 'Delete failed') + guidance });
+      // eslint-disable-next-line no-console
+      console.error('[Device Delete Error]', e);
     }
   }, [addToast, load, page, pageSize, serverPaginated]);
 

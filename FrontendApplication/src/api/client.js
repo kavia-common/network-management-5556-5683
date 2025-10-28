@@ -1,63 +1,71 @@
 /**
  * Resolve API base URL from environment.
- * - Primary: REACT_APP_API_BASE_URL (Create React App)
- * - Fallback: if running at localhost:3000, use http://localhost:3001
- * - Otherwise, use same-origin (empty string -> relative paths)
+ * - Strict: must be REACT_APP_API_BASE_URL (absolute URL). No same-origin fallback.
+ * - For local convenience, if not set and running on localhost:3000, use http://localhost:3001
+ *   but emit a strong warning. In all other cases, throw on missing base URL.
  */
 const rawEnvBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
   ? process.env.REACT_APP_API_BASE_URL.trim()
   : '';
 
-/**
- * Avoid double-protocol or trailing-slash mistakes. Normalize:
- * - Strip trailing slashes
- * - Ensure it's a fully qualified http(s) URL when provided
- */
 function normalizeBaseUrl(u) {
   if (!u) return '';
   const noTrailing = u.replace(/\/*$/, '');
-  // If already absolute http(s) URL, keep as-is after slash strip
-  if (/^https?:\/\//i.test(noTrailing)) return noTrailing;
-  // If someone mistakenly set it to a relative path, return empty to use same-origin
-  return '';
+  return /^https?:\/\//i.test(noTrailing) ? noTrailing : '';
 }
 
 const envBase = normalizeBaseUrl(rawEnvBase);
-
 const isLocalDev3000 = typeof window !== 'undefined'
   && window.location
   && typeof window.location.origin === 'string'
   && window.location.origin.includes('localhost:3000');
 
-const resolvedBaseURL = envBase || (isLocalDev3000 ? 'http://localhost:3001' : '');
-
-// If no REACT_APP_API_BASE_URL is provided and not on localhost:3000, warn about same-origin usage.
-// eslint-disable-next-line no-console
-if (!envBase && !isLocalDev3000) {
-  console.warn('[API Client] REACT_APP_API_BASE_URL not set and not on localhost:3000. Using same-origin relative paths. Ensure your frontend is reverse-proxying to the backend or set REACT_APP_API_BASE_URL.');
+// Strict absolute base resolution
+let resolvedBaseURL = envBase;
+if (!resolvedBaseURL) {
+  if (isLocalDev3000) {
+    resolvedBaseURL = 'http://localhost:3001';
+    // eslint-disable-next-line no-console
+    console.warn('[API Client] REACT_APP_API_BASE_URL not set. Falling back to http://localhost:3001 for local development only.');
+  } else {
+    // eslint-disable-next-line no-console
+    console.error('[API Client] REACT_APP_API_BASE_URL is required and must be an absolute URL. Set it in your environment.');
+    // Keep empty to cause explicit failure on first request, avoiding silent same-origin usage.
+    resolvedBaseURL = '';
+  }
 }
 
 // Log once on module load to help diagnose connectivity
 // eslint-disable-next-line no-console
-console.info(`API Base URL resolved to: ${resolvedBaseURL || 'same-origin'}`);
+console.info(`API Base URL resolved to: ${resolvedBaseURL || '(unset - requests will fail)'}`);
 try {
   const mocks = String(process.env.REACT_APP_USE_MOCKS || '').toLowerCase() === 'true';
   // eslint-disable-next-line no-console
   console.info(`API Mock mode: ${mocks ? 'ENABLED' : 'disabled'}`);
-} catch (e) {
+} catch {
   // ignore
 }
 
 /**
  * Minimal client wrapper around fetch with JSON handling and base URL.
- * If resolvedBaseURL is empty, uses same-origin relative paths.
- * Preserves backend pagination shape compatibility and error propagation.
+ * - Always uses absolute base URL (no same-origin).
+ * - Accepts JSON when Content-Type includes application/json (case-insensitive, with optional charset).
+ * - Tolerates non-JSON or empty bodies (e.g., 204/OPTIONS).
+ * - Surfaces non-2xx errors; does not throw for 2xx with JSON.
+ * - Adds concise diagnostics to console: status, content type, first 200 chars of body.
  */
 async function request(path, options = {}) {
+  if (!resolvedBaseURL) {
+    const err = new Error('API base URL is not configured. Set REACT_APP_API_BASE_URL.');
+    // eslint-disable-next-line no-console
+    console.error('[API Config Error]', err.message);
+    throw err;
+  }
+
   // Ensure path formatting and safe URL concatenation
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const base = resolvedBaseURL ? resolvedBaseURL.replace(/\/*$/, '') : ''; // strip trailing slash when present
-  const url = base ? `${base}${normalizedPath}` : normalizedPath;
+  const base = resolvedBaseURL.replace(/\/*$/, ''); // strip trailing slash when present
+  const url = `${base}${normalizedPath}`;
 
   // Default to omit credentials to avoid unexpected CORS failures if backend does not allow cookies
   const { credentials = 'omit' } = options;
@@ -73,39 +81,55 @@ async function request(path, options = {}) {
   try {
     res = await fetch(url, { ...options, headers, credentials });
   } catch (networkErr) {
-    // Helpful guidance to surface CORS/DNS/base URL problems
     // eslint-disable-next-line no-console
-    console.error(
-      '[Network Error] Failed to reach backend.',
-      {
-        url,
-        base: resolvedBaseURL || 'same-origin',
-        hint: 'Check REACT_APP_API_BASE_URL, backend availability, and CORS configuration. If running locally, ensure backend listens on http://localhost:3001.',
-        originalError: networkErr?.message || networkErr
-      }
-    );
+    console.error('[Network Error] Failed to reach backend.', {
+      url,
+      base: resolvedBaseURL,
+      hint: 'Check REACT_APP_API_BASE_URL, backend availability, and CORS configuration.',
+      originalError: networkErr?.message || networkErr
+    });
     const err = new Error('Network error contacting API. See console for details.');
     err.cause = networkErr;
     throw err;
   }
 
-  const contentType = (res.headers && res.headers.get && res.headers.get('content-type')) || '';
+  const status = res.status;
+  const contentTypeRaw = (res.headers && res.headers.get && res.headers.get('content-type')) || '';
+  const contentType = String(contentTypeRaw).toLowerCase();
   let data = null;
+  let bodyText = '';
 
-  // Read a small snippet for error diagnostics if needed
-  let textSnippet = '';
+  // Read body safely: handle empty (content-length 0 or 204/no-content) and non-JSON
   try {
-    if (contentType.includes('application/json')) {
+    const isJson = /application\/json/i.test(contentTypeRaw);
+    if (status === 204 || status === 205 || options.method === 'OPTIONS') {
+      data = null;
+      bodyText = '';
+    } else if (isJson) {
       data = await res.json();
+      bodyText = JSON.stringify(data).slice(0, 200);
     } else {
+      // Try text; it's fine if empty
       const txt = await res.text();
-      textSnippet = (txt || '').slice(0, 300);
+      bodyText = (txt || '').slice(0, 200);
       data = txt;
+      // If content-type absent but body looks like JSON, attempt a safe parse
+      if (!contentType && bodyText.trim().startsWith('{')) {
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          // keep as text
+        }
+      }
     }
   } catch (parseErr) {
     // eslint-disable-next-line no-console
-    console.warn('[API Parse Warning] Could not parse response body', { url, status: res.status, contentType });
+    console.warn('[API Parse Warning] Could not parse response body', { url, status, contentType: contentTypeRaw });
   }
+
+  // Concise diagnostics for every response
+  // eslint-disable-next-line no-console
+  console.debug('[API Response]', { url, status, contentType: contentTypeRaw || '(none)', bodyPreview: bodyText });
 
   if (!res.ok) {
     const message =
@@ -113,25 +137,27 @@ async function request(path, options = {}) {
       res.statusText ||
       'Request failed';
     const err = new Error(String(message));
-    err.status = res.status;
+    err.status = status;
     err.data = data;
     // eslint-disable-next-line no-console
     console.error('[API Error]', {
       url,
-      status: res.status,
+      status,
       statusText: res.statusText,
-      contentType,
+      contentType: contentTypeRaw,
       message: String(message),
-      bodySnippet: textSnippet || (typeof data === 'string' ? data.slice(0, 300) : undefined),
+      bodySnippet: bodyText
     });
     throw err;
   }
+
+  // For 2xx, return parsed data (could be null for 204)
   return data;
 }
 
 // PUBLIC_INTERFACE
 export function getBaseURL() {
-  /** Returns the configured API base URL (from env or fallback). */
+  /** Returns the configured API base URL (from env). */
   return resolvedBaseURL;
 }
 

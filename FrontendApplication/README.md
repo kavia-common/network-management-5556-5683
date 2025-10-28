@@ -78,7 +78,7 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 - Start frontend on port 3000 with the appropriate API base:
   - HTTP local: `REACT_APP_API_BASE_URL=http://localhost:3001`
   - HTTPS preview: `REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001`
-- After updating .env, restart the frontend preview to apply the new base URL.
+- After updating .env, restart the frontend preview to apply the new base URL. In most environments, stopping and starting the preview (or re-running npm start) is required for env changes to take effect.
 - Quick verification endpoints:
   - GET /health/db should return a JSON object with status ok when DB connectivity is healthy.
   - GET /devices should return the device list envelope.

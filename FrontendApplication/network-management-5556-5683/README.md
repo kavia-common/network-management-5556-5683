@@ -28,6 +28,9 @@ Quick links:
 
 - REACT_APP_API_BASE_URL
   Base URL for the backend API (e.g., http://localhost:3001). If omitted, fetch uses same-origin relative paths.
+  For HTTPS previews, set this to the matching HTTPS backend origin at the same host (e.g.,
+  https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001) to avoid mixed-content/network errors.
+  After changing .env, restart the frontend preview (stop/start) so the new env is picked up.
   IMPORTANT for HTTPS previews: when the frontend origin is HTTPS (for example,
   https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000), set this to the exact HTTPS backend origin, typically
   https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001. This prevents mixed-content and blocked network requests.

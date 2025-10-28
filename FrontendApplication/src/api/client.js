@@ -15,6 +15,12 @@ const isLocalDev3000 = typeof window !== 'undefined'
 
 const resolvedBaseURL = envBase || (isLocalDev3000 ? 'http://localhost:3001' : '');
 
+// If no REACT_APP_API_BASE_URL is provided and not on localhost:3000, warn about same-origin usage.
+if (!envBase && !isLocalDev3000) {
+  // eslint-disable-next-line no-console
+  console.warn('[API Client] REACT_APP_API_BASE_URL not set and not on localhost:3000. Using same-origin relative paths. Ensure your frontend is reverse-proxying to the backend or set REACT_APP_API_BASE_URL.');
+}
+
 // Log once on module load to help diagnose connectivity
 // eslint-disable-next-line no-console
 console.info(`API Base URL resolved to: ${resolvedBaseURL || 'same-origin'}`);

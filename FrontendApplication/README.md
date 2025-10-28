@@ -58,7 +58,7 @@ Preview links:
 - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT
   - Integer default page size for the devices list pagination UI. Defaults to 10 if unset.
 
-A sample configuration is provided in .env.example. Copy it to .env (or .env.development.local) and adjust values. The app reads REACT_APP_API_BASE_URL to prefix all API requests via a centralized client (src/api/client.js).
+A sample configuration is provided in .env.example. Copy it to .env (or .env.development.local) and adjust values. The app reads REACT_APP_API_BASE_URL to prefix all API requests via a centralized client (src/api/client.js). Ensure the backend CORS allows your frontend origin (set FRONTEND_ORIGIN on the backend for production).
 
 If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PAGINATION_PAGE_SIZE_DEFAULT.
 

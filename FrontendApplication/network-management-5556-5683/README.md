@@ -35,7 +35,7 @@ Quick links:
 - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT
   Default page size for pagination (integer). Defaults to 10 if unset.
 
-A sample is provided in FrontendApplication/.env.example.
+A sample is provided in FrontendApplication/.env.example. Copy it to FrontendApplication/.env (or .env.development.local) and adjust values. The frontend uses REACT_APP_API_BASE_URL to build absolute API URLs.
 
 ## Backend Endpoints Expected
 

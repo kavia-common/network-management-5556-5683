@@ -10,7 +10,14 @@ let mockDevices = [
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Helpers
-const mapToServer = (d) => ({ ...d });
+const mapToServer = (d) => ({
+  // Map frontend fields to backend expectations
+  name: d.name,
+  ip_address: d.ip ?? d.ip_address ?? d.ipAddress,
+  type: d.type,
+  location: d.location,
+  status: d.status,
+});
 const mapFromServer = (d) => ({
   ...d,
   id: d.id ?? d._id,

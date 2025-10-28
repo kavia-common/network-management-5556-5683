@@ -1,8 +1,8 @@
-/**
- * Resolve API base URL from environment.
- * - Primary: REACT_APP_API_BASE_URL (Create React App)
- * - Fallback: http://localhost:3001 when not set to ensure working local CORS setup
- */
+ /**
+  * Resolve API base URL from environment.
+  * - Primary: REACT_APP_API_BASE_URL (Create React App)
+  * - Fallback: http://localhost:3001 when not set to ensure working local CORS setup
+  */
 const resolvedBaseURL = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
   ? process.env.REACT_APP_API_BASE_URL.trim()
   : 'http://localhost:3001';
@@ -14,15 +14,18 @@ const resolvedBaseURL = (process.env.REACT_APP_API_BASE_URL && process.env.REACT
 async function request(path, options = {}) {
   // Ensure path formatting and safe URL concatenation
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const base = resolvedBaseURL.replace(/\/+$/, ''); // strip trailing slash
+  const base = resolvedBaseURL.replace(/\/*$/, ''); // strip trailing slash
   const url = `${base}${normalizedPath}`;
+
+  // Default to omit credentials to avoid unexpected CORS failures if backend does not allow cookies
+  const { credentials = 'omit' } = options;
 
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   };
 
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(url, { ...options, headers, credentials });
   const contentType = res.headers.get('content-type') || '';
   let data = null;
 

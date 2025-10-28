@@ -2,16 +2,21 @@ import { http, getUseMocks } from './client';
 
 // In-memory mock store
 let mockDevices = [
-  { id: '1', name: 'Core Router', ip: '192.168.0.1', type: 'router', location: 'DC-1', status: 'online' },
-  { id: '2', name: 'Edge Switch', ip: '192.168.0.10', type: 'switch', location: 'DC-2', status: 'offline' },
-  { id: '3', name: 'Web Server', ip: '10.0.0.5', type: 'server', location: 'HQ', status: 'online' }
+  { id: '1', name: 'Core Router', ip: '192.168.0.1', type: 'router', location: 'DC-1', status: 'online', last_checked: new Date().toISOString() },
+  { id: '2', name: 'Edge Switch', ip: '192.168.0.10', type: 'switch', location: 'DC-2', status: 'offline', last_checked: null },
+  { id: '3', name: 'Web Server', ip: '10.0.0.5', type: 'server', location: 'HQ', status: 'online', last_checked: new Date(Date.now() - 3600_000).toISOString() }
 ];
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Helpers
 const mapToServer = (d) => ({ ...d });
-const mapFromServer = (d) => ({ ...d, id: d.id ?? d._id });
+const mapFromServer = (d) => ({
+  ...d,
+  id: d.id ?? d._id,
+  // Normalize field names between backend and frontend
+  ip: d.ip ?? d.ip_address ?? d.ipAddress,
+});
 
 /**
  * Convert server response to a normalized pagination shape.
@@ -158,7 +163,7 @@ export async function pingDevice(id) {
     }
     // flip status for demo
     const current = mockDevices[idx];
-    const updated = { ...current, status: current.status === 'online' ? 'offline' : 'online' };
+    const updated = { ...current, status: current.status === 'online' ? 'offline' : 'online', last_checked: new Date().toISOString() };
     mockDevices[idx] = updated;
     return { ...updated };
   }

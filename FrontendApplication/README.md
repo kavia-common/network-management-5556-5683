@@ -51,7 +51,7 @@ Preview links:
 
 - REACT_APP_API_BASE_URL
   - Base URL for the backend API (e.g., http://localhost:3001).
-  - If omitted, requests are made relative to the current origin (useful if CRA proxy is configured).
+  - If omitted, the app will fallback to http://localhost:3001 for local development.
 - REACT_APP_USE_MOCKS
   - When "true", the app uses an in-memory mock API instead of calling the backend.
   - Useful for UI-only development without a running backend.

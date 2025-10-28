@@ -14,6 +14,7 @@ function DeviceTable({ devices, onDelete, onRowClick }) {
             <th style={th} className="hide-sm">Type</th>
             <th style={th} className="hide-md">Location</th>
             <th style={th}>Status</th>
+            <th style={th} className="hide-md">Last Checked</th>
             <th style={th} aria-label="Actions">Actions</th>
           </tr>
         </thead>
@@ -62,7 +63,7 @@ const DeviceRow = memo(function DeviceRow({ d, onDelete, onRowClick }) {
         </div>
       </td>
       <td style={td}>
-        <span title={d.ip} className="truncate">{d.ip}</span>
+        <span title={d.ip || d.ip_address} className="truncate">{d.ip || d.ip_address}</span>
       </td>
       <td style={td} className="hide-sm">{cap(d.type)}</td>
       <td style={td} className="hide-md">
@@ -71,6 +72,11 @@ const DeviceRow = memo(function DeviceRow({ d, onDelete, onRowClick }) {
       <td style={td}>
         <span aria-label={`Status ${d.status}`} style={{ ...badge, background: d.status === 'online' ? '#e6ffed' : '#ffe5e5', borderColor: d.status === 'online' ? '#2e7d32' : '#d93025', color: '#1a1a1a' }}>
           {cap(d.status)}
+        </span>
+      </td>
+      <td style={td} className="hide-md">
+        <span title={d.last_checked || '—'} className="truncate">
+          {d.last_checked ? new Date(d.last_checked).toLocaleString() : '—'}
         </span>
       </td>
       <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={(e)=> e.stopPropagation()}>

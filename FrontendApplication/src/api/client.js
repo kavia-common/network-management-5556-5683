@@ -1,9 +1,11 @@
 /**
  * Resolve API base URL from environment.
  * - Primary: REACT_APP_API_BASE_URL (Create React App)
- * - Fallback: empty string for same-origin calls during development/proxy setups
+ * - Fallback: http://localhost:3001 when not set to ensure working local CORS setup
  */
-const resolvedBaseURL = (process.env.REACT_APP_API_BASE_URL || '').trim();
+const resolvedBaseURL = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
+  ? process.env.REACT_APP_API_BASE_URL.trim()
+  : 'http://localhost:3001';
 
 /**
  * Minimal client wrapper around fetch with JSON handling and base URL.

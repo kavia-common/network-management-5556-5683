@@ -54,7 +54,7 @@ export default function DeviceDetail() {
       </header>
 
       <div role="group" aria-label="Device details" style={card}>
-        <Row label="IP" value={device.ip} />
+        <Row label="IP" value={device.ip || device.ip_address} />
         <Row label="Type" value={cap(device.type)} />
         <Row
           label="Status"
@@ -65,6 +65,7 @@ export default function DeviceDetail() {
           }
         />
         <Row label="Location" value={device.location} />
+        <Row label="Last Checked" value={device.last_checked ? new Date(device.last_checked).toLocaleString() : '—'} />
       </div>
 
       <div>

@@ -51,7 +51,8 @@ Preview links:
 
 - REACT_APP_API_BASE_URL
   - Base URL for the backend API (e.g., http://localhost:3001).
-  - If omitted, the app will fallback to http://localhost:3001 for local development.
+  - If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin.
+  - Tip: If you set "localhost:3001" without protocol, the client will normalize it to "http://localhost:3001".
 - REACT_APP_USE_MOCKS
   - When "true", the app uses an in-memory mock API instead of calling the backend.
   - Useful for UI-only development without a running backend.
@@ -59,6 +60,12 @@ Preview links:
   - Integer default page size for the devices list pagination UI. Defaults to 10 if unset.
 
 A sample configuration is provided in .env.example. Copy it to .env (or .env.development.local) and adjust values. The app reads REACT_APP_API_BASE_URL to prefix all API requests via a centralized client (src/api/client.js).
+
+CORS notes:
+- When frontend runs at http://localhost:3000 and backend at http://localhost:3001, CORS must be enabled on the backend.
+- See BackendAPIService/CORS_SETUP.md for simple Flask CORS setup using flask-cors.
+- The client sets fetch mode to "cors" only when using a cross-origin absolute base URL, reducing accidental CORS failures.
+- ConnectivityBanner (added to Devices page) surfaces API reachability and hints if misconfigured.
 
 If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PAGINATION_PAGE_SIZE_DEFAULT.
 

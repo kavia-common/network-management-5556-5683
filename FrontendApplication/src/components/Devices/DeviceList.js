@@ -7,6 +7,7 @@ import Spinner from '../Common/Spinner';
 import { useToastContext } from '../../hooks/useToast';
 import Pagination from '../Common/Pagination';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import ConnectivityBanner from '../Common/ConnectivityBanner';
 
 // PUBLIC_INTERFACE
 export default function DeviceList() {
@@ -141,6 +142,7 @@ export default function DeviceList() {
         <Link to="/devices/new" className="btn" aria-label="Add new device" style={btnStyle}>+ Add Device</Link>
       </div>
 
+      <ConnectivityBanner />
       <DeviceFilters
         q={q} setQ={setQ}
         type={type} setType={setType}

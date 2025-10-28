@@ -27,7 +27,9 @@ Quick links:
 ## Environment Variables
 
 - REACT_APP_API_BASE_URL
-  Base URL for the backend API (e.g., http://localhost:3001). If omitted, the app falls back to http://localhost:3001.
+  Base URL for the backend API (e.g., http://localhost:3001).
+  If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin relative paths.
+  Ensure backend CORS allows http://localhost:3000 during development when using a cross-origin base URL.
 
 - REACT_APP_USE_MOCKS
   When "true", an in-memory mock API is used; no backend required. Useful for UI-only development.
@@ -35,7 +37,7 @@ Quick links:
 - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT
   Default page size for pagination (integer). Defaults to 10 if unset.
 
-A sample is provided in FrontendApplication/.env.example. Copy it to FrontendApplication/.env (or .env.development.local) and adjust values. The frontend uses REACT_APP_API_BASE_URL to build absolute API URLs.
+A sample is provided in FrontendApplication/.env.example.
 
 ## Backend Endpoints Expected
 

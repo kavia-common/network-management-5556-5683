@@ -1,18 +1,35 @@
 /**
  * Resolve API base URL from environment.
  * - Primary: REACT_APP_API_BASE_URL (Create React App)
- * - Fallback: if running at localhost:3000, use http://localhost:3001
- * - Otherwise, use same-origin (empty string -> relative paths)
+ * - Fallbacks:
+ *    - If frontend runs at localhost:3000, default to http://localhost:3001 (backend dev port)
+ *    - Otherwise use same-origin (empty string -> relative paths)
+ * Notes:
+ *    - We normalize trailing slashes and ensure http(s) scheme is present when absolute.
  */
-const envBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
+const rawEnvBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
   ? process.env.REACT_APP_API_BASE_URL.trim()
   : '';
+
+function normalizeBaseUrl(url) {
+  if (!url) return '';
+  // If it's a bare host without protocol, assume http
+  if (/^localhost:\d+$/i.test(url)) {
+    return `http://${url}`;
+  }
+  // Add protocol if missing but domain present (e.g., localhost)
+  if (/^localhost$/i.test(url)) {
+    return 'http://localhost:3001';
+  }
+  return url.replace(/\/+$/, ''); // strip trailing slashes
+}
 
 const isLocalDev3000 = typeof window !== 'undefined'
   && window.location
   && typeof window.location.origin === 'string'
-  && window.location.origin.includes('localhost:3000');
+  && /localhost:3000$/i.test(window.location.host);
 
+const envBase = normalizeBaseUrl(rawEnvBase);
 const resolvedBaseURL = envBase || (isLocalDev3000 ? 'http://localhost:3001' : '');
 
 // Log once on module load to help diagnose connectivity
@@ -47,7 +64,7 @@ async function request(path, options = {}) {
 
   let res;
   try {
-    res = await fetch(url, { ...options, headers, credentials });
+    res = await fetch(url, { ...options, headers, credentials, mode: base ? 'cors' : 'same-origin' });
   } catch (networkErr) {
     // Helpful guidance to surface CORS/DNS/base URL problems
     // eslint-disable-next-line no-console
@@ -56,7 +73,7 @@ async function request(path, options = {}) {
       {
         url,
         base: resolvedBaseURL || 'same-origin',
-        hint: 'Check REACT_APP_API_BASE_URL, backend availability, and CORS configuration. If running locally, ensure backend listens on http://localhost:3001.',
+        hint: 'Check REACT_APP_API_BASE_URL, backend availability, and CORS configuration. If running locally, ensure backend listens on http://localhost:3001 and has CORS enabled.',
         originalError: networkErr?.message || networkErr
       }
     );

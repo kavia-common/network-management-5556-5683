@@ -46,7 +46,9 @@ export default function ConnectivityBanner() {
       <span>Base: <code>{status.base}</code>. {status.ok ? '' : `Error: ${status.message}.`}</span>
       {!status.ok && (
         <div style={{ marginTop: 4 }}>
-          Hints: Ensure REACT_APP_API_BASE_URL is set to http://localhost:3001, backend is running, and CORS is enabled on the backend for http://localhost:3000.
+          Hints: Ensure REACT_APP_API_BASE_URL points to your backend origin
+          (HTTP: http://localhost:3001 or HTTPS preview: https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001),
+          backend is running, and CORS allows your exact frontend origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000).
         </div>
       )}
     </div>

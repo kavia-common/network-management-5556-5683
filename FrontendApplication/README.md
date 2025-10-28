@@ -47,6 +47,9 @@ Preview links:
 - Backend API: http://localhost:3001
 - Backend API docs (Swagger UI): http://localhost:3001/docs
 
+HTTPS previews:
+- If your frontend runs at an HTTPS origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000), you MUST set REACT_APP_API_BASE_URL to the matching HTTPS backend origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001) to avoid mixed-content/network errors.
+
 ## Environment Variables
 
 - REACT_APP_API_BASE_URL
@@ -72,7 +75,13 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 ## Verifying Connectivity
 
 - Start backend on port 3001 (ensure Mongo is reachable and MONGO_URI is set).
-- Start frontend on port 3000 with `REACT_APP_API_BASE_URL=http://localhost:3001`.
+- Start frontend on port 3000 with the appropriate API base:
+  - HTTP local: `REACT_APP_API_BASE_URL=http://localhost:3001`
+  - HTTPS preview: `REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001`
+- After updating .env, restart the frontend preview to apply the new base URL.
+- Quick verification endpoints:
+  - GET /health/db should return a JSON object with status ok when DB connectivity is healthy.
+  - GET /devices should return the device list envelope.
 - Navigate to /devices:
   - If the database is empty, create a new device via the UI.
   - Check that list, detail, edit, delete, and "Refresh Status" work.

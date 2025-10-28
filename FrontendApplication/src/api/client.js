@@ -1,6 +1,7 @@
 /**
  * Resolve API base URL from environment.
  * - Primary: REACT_APP_API_BASE_URL (Create React App)
+ * - Supports full HTTPS/HTTP origins (e.g., https://host:3001) to avoid mixed-content with HTTPS frontends.
  * - Fallbacks:
  *    - If frontend runs at localhost:3000, default to http://localhost:3001 (backend dev port)
  *    - Otherwise use same-origin (empty string -> relative paths)

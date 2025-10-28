@@ -27,9 +27,10 @@ Quick links:
 ## Environment Variables
 
 - REACT_APP_API_BASE_URL
-  Base URL for the backend API (e.g., http://localhost:3001).
-  If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin relative paths.
-  Ensure backend CORS allows http://localhost:3000 during development when using a cross-origin base URL.
+  Base URL for the backend API (e.g., http://localhost:3001). If omitted, fetch uses same-origin relative paths.
+  IMPORTANT for HTTPS previews: when the frontend origin is HTTPS (for example,
+  https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000), set this to the exact HTTPS backend origin, typically
+  https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001. This prevents mixed-content and blocked network requests.
 
 - REACT_APP_USE_MOCKS
   When "true", an in-memory mock API is used; no backend required. Useful for UI-only development.
@@ -38,6 +39,18 @@ Quick links:
   Default page size for pagination (integer). Defaults to 10 if unset.
 
 A sample is provided in FrontendApplication/.env.example.
+
+## HTTPS/CORS Alignment
+
+When running over HTTPS:
+- Set FrontendApplication/.env REACT_APP_API_BASE_URL to the HTTPS backend origin at the same host, e.g.:
+  https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
+- Ensure backend CORS allowlist includes the exact HTTPS frontend origin:
+  https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000
+- Restart the frontend preview after changing .env.
+- Verify with:
+  - GET https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001/health/db
+  - GET https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001/devices
 
 ## Backend Endpoints Expected
 

@@ -1,6 +1,6 @@
 /**
  * Resolve API base URL from environment.
- * - Primary: REACT_APP_API_BASE_URL (Create React App)
+ * - Primary: REACT_APP_API_BASE_URL (Create React App). If migrating to Vite, use VITE_BACKEND_API_BASE or VITE_API_BASE_URL.
  *   Example (provided for this workspace): https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001
  * - Supports full HTTPS/HTTP origins (e.g., https://host:3001) to avoid mixed-content with HTTPS frontends.
  * - Fallbacks:

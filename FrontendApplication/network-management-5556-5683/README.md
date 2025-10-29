@@ -14,8 +14,8 @@ Quick links:
    npm install
 
 2) Configure environment
-   - Copy FrontendApplication/.env.example to FrontendApplication/.env
-   - Adjust values as needed:
+   - Preferred: set FrontendApplication/.env.development.local with REACT_APP_API_BASE_URL pointing to your backend preview origin.
+   - Alternatively, copy FrontendApplication/.env.example to FrontendApplication/.env and adjust values as needed:
      REACT_APP_API_BASE_URL=http://localhost:3001
      REACT_APP_USE_MOCKS=false
      REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT=10

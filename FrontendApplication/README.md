@@ -49,6 +49,7 @@ Preview links:
 
 HTTPS previews:
 - If your frontend runs at an HTTPS origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000), you MUST set REACT_APP_API_BASE_URL to the matching HTTPS backend origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001) to avoid mixed-content/network errors.
+- The preview hostname can change between sessions. If the frontend cannot reach the backend, update FrontendApplication/.env.development.local REACT_APP_API_BASE_URL to the current BackendAPIService origin (check the running_containers info or the preview URL shown by the platform).
 
 ## Environment Variables
 

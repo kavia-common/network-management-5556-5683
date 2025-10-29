@@ -18,7 +18,9 @@ A responsive and accessible React UI for managing network devices. Users can cre
    npm install
 
 2. Configure environment
-   - Copy `.env.example` to `.env` or `.env.development.local` and update values as needed.
+   - Preferred for this workspace: set `.env.development.local` with the provided backend API base URL:
+     - REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
+   - Alternatively, copy `.env.example` to `.env` or `.env.development.local` and update values as needed.
    - Typical local setup if frontend runs on 3000 and backend on 3001:
      - REACT_APP_API_BASE_URL=http://localhost:3001
      - REACT_APP_USE_MOCKS=false (set true to use in-memory mocks)
@@ -55,8 +57,11 @@ HTTPS previews:
 
 - REACT_APP_API_BASE_URL
   - Base URL for the backend API (e.g., http://localhost:3001).
+  - For HTTPS previews, set this to the matching HTTPS backend origin at the same host:
+    https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
   - If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin.
   - Tip: If you set "localhost:3001" without protocol, the client will normalize it to "http://localhost:3001".
+  - After changing .env files, restart the frontend dev server/preview so the new environment variables take effect.
 - REACT_APP_USE_MOCKS
   - When "true", the app uses an in-memory mock API instead of calling the backend.
   - Useful for UI-only development without a running backend.
@@ -78,7 +83,7 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 - Start backend on port 3001 (ensure Mongo is reachable and MONGO_URI is set).
 - Start frontend on port 3000 with the appropriate API base:
   - HTTP local: `REACT_APP_API_BASE_URL=http://localhost:3001`
-  - HTTPS preview: `REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001`
+  - HTTPS preview (provided): `REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001`
 - After updating .env, restart the frontend preview to apply the new base URL. In most environments, stopping and starting the preview (or re-running npm start) is required for env changes to take effect.
 - Quick verification endpoints:
   - GET /health/db should return a JSON object with status ok when DB connectivity is healthy.

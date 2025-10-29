@@ -20,7 +20,7 @@ This minimal setup is sufficient for development where the frontend and backend 
 
 - If you need to restrict origins, configure:
   
-    CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000"]}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3000"]}})
 
 - If you use cookies/authorization headers, set:
   
@@ -29,7 +29,7 @@ This minimal setup is sufficient for development where the frontend and backend 
 Be sure to restart the backend after making these changes.
 
 Verification:
-- With frontend at https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000 and
-  REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001:
-  - GET https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001/health/db should return status ok
-  - GET https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001/devices should return the device list envelope
+- With frontend at https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3000 and
+  REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001:
+  - GET https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001/health/db should return status ok
+  - GET https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001/devices should return the device list envelope

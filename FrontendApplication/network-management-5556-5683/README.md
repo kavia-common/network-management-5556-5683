@@ -15,7 +15,7 @@ Quick links:
 
 2) Configure environment
    - Preferred: set FrontendApplication/.env.development.local with:
-     REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
+     REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001
    - Alternatively, copy FrontendApplication/.env.example to FrontendApplication/.env and adjust values as needed:
      REACT_APP_API_BASE_URL=http://localhost:3001
      REACT_APP_USE_MOCKS=false
@@ -41,6 +41,10 @@ Quick links:
   Default page size for pagination (integer). Defaults to 10 if unset.
 
 A sample is provided in FrontendApplication/.env.example.
+
+Note for HTTPS previews:
+- Current preview host: https://vscode-internal-28439-beta.beta01.cloud.kavia.ai
+- Set REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001 in FrontendApplication/.env.development.local when using the preview.
 
 ## Backend Endpoints Expected
 

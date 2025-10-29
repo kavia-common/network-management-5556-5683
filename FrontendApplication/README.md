@@ -19,7 +19,7 @@ A responsive and accessible React UI for managing network devices. Users can cre
 
 2. Configure environment
    - Preferred for this workspace: set `.env.development.local` with the provided backend API base URL:
-     - REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
+     - REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001
    - Alternatively, copy `.env.example` to `.env` or `.env.development.local` and update values as needed.
    - Typical local setup if frontend runs on 3000 and backend on 3001:
      - REACT_APP_API_BASE_URL=http://localhost:3001
@@ -50,7 +50,7 @@ Preview links:
 - Backend API docs (Swagger UI): http://localhost:3001/docs
 
 HTTPS previews:
-- If your frontend runs at an HTTPS origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000), you MUST set REACT_APP_API_BASE_URL to the matching HTTPS backend origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001) to avoid mixed-content/network errors.
+- If your frontend runs at an HTTPS origin (e.g., https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3000), you MUST set REACT_APP_API_BASE_URL to the matching HTTPS backend origin (e.g., https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001) to avoid mixed-content/network errors.
 - The preview hostname can change between sessions. If the frontend cannot reach the backend, update FrontendApplication/.env.development.local REACT_APP_API_BASE_URL to the current BackendAPIService origin (check the running_containers info or the preview URL shown by the platform).
 
 ## Environment Variables
@@ -58,7 +58,7 @@ HTTPS previews:
 - REACT_APP_API_BASE_URL
   - Base URL for the backend API (e.g., http://localhost:3001).
   - For HTTPS previews, set this to the matching HTTPS backend origin at the same host:
-    https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001
+    https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001
   - If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin.
   - Tip: If you set "localhost:3001" without protocol, the client will normalize it to "http://localhost:3001".
   - After changing .env files, restart the frontend dev server/preview so the new environment variables take effect.
@@ -83,7 +83,7 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 - Start backend on port 3001 (ensure Mongo is reachable and MONGO_URI is set).
 - Start frontend on port 3000 with the appropriate API base:
   - HTTP local: `REACT_APP_API_BASE_URL=http://localhost:3001`
-  - HTTPS preview (provided): `REACT_APP_API_BASE_URL=https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001`
+  - HTTPS preview (provided): `REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001`
 - After updating .env, restart the frontend preview to apply the new base URL. In most environments, stopping and starting the preview (or re-running npm start) is required for env changes to take effect.
 - Quick verification endpoints:
   - GET /health/db should return a JSON object with status ok when DB connectivity is healthy.

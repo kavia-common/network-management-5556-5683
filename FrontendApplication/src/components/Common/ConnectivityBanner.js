@@ -47,8 +47,8 @@ export default function ConnectivityBanner() {
       {!status.ok && (
         <div style={{ marginTop: 4 }}>
           Hints: Ensure REACT_APP_API_BASE_URL points to your backend origin
-          (HTTP: http://localhost:3001 or HTTPS preview: https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3001),
-          backend is running, and CORS allows your exact frontend origin (e.g., https://vscode-internal-26250-beta.beta01.cloud.kavia.ai:3000).
+          (HTTP: http://localhost:3001 or HTTPS preview: https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001),
+          backend is running, and CORS allows your exact frontend origin (e.g., https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3000).
         </div>
       )}
     </div>

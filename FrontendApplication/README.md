@@ -31,8 +31,19 @@ A responsive and accessible React UI for managing network devices. Users can cre
    npm run start:fast
    # or standard mode
    npm start
+   # enforce port 3000 and avoid auto-switch prompt
+   npm run start:strict3000
 
    Open http://localhost:3000
+
+If you see "Something is already running on port 3000":
+- Stop the existing process using that port (preferred), or
+- Change the port by running: PORT=3001 npm start (then open http://localhost:3001)
+
+To kill the process on Linux/macOS:
+  lsof -i :3000 -t | xargs -r kill -9
+On Windows (PowerShell):
+  Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
 
 Performance tips:
 - We disable source maps in development by default to speed up rebuilds. If you need to debug with source maps, use:

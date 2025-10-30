@@ -11,6 +11,7 @@
   "scripts": {
     "start": "react-scripts start",
     "start:fast": "cross-env GENERATE_SOURCEMAP=false BROWSER=none PORT=3000 react-scripts start",
+    "start:strict3000": "cross-env CI=true BROWSER=none PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "build:analyze": "cross-env GENERATE_SOURCEMAP=true react-scripts build",
     "test": "react-scripts test",

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { listDevices, deleteDevice } from '../../api/devices';
+import { listDevicesRaw } from '../../api/devices_raw';
 import DeviceFilters from './DeviceFilters';
 import DeviceTable from './DeviceTable';
 import Spinner from '../Common/Spinner';
@@ -14,7 +15,7 @@ export default function DeviceList() {
   /** Displays device list with search, filters, sort, delete and pagination with server/client fallback. */
   const defaultPageSize = Number(process.env.REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT || 10);
 
-  const [allDevices, setAllDevices] = useState([]); // for client fallback
+  const [allDevices, setAllDevices] = useState([]); // holds either full list (client mode) or current page (server mode)
   const [loading, setLoading] = useState(true);
 
   // filters and sort (persist across pages)
@@ -37,6 +38,8 @@ export default function DeviceList() {
   // prevent overlapping loads
   const loadingRef = useRef(false);
 
+  const hasActiveFilters = (debouncedQ.trim() !== '') || type !== 'all' || status !== 'all';
+
   const load = useCallback(async (targetPage = page, targetLimit = pageSize) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
@@ -56,7 +59,6 @@ export default function DeviceList() {
     } catch (e) {
       const guidance = ' Check API base URL, backend availability, and CORS.';
       addToast({ type: 'error', message: (e && e.message ? e.message : 'Failed to load devices') + guidance });
-      // Also log to console with context
       // eslint-disable-next-line no-console
       console.error('[Devices Load Error]', e);
     } finally {
@@ -65,34 +67,84 @@ export default function DeviceList() {
     }
   }, [addToast, page, pageSize]);
 
-  useEffect(() => { load(1, pageSize); /* initial load with page=1 */ }, [load, pageSize]);
+  // Initial load with page=1
+  useEffect(() => { load(1, pageSize); }, [load, pageSize]);
 
-  // Re-load when pagination changes if server handles pagination.
+  // Re-load when pagination changes if server handles pagination AND no active filters
   useEffect(() => {
-    if (serverPaginated) {
+    if (serverPaginated && !hasActiveFilters) {
       load(page, pageSize);
     }
-  }, [page, pageSize, serverPaginated, load]);
+  }, [page, pageSize, serverPaginated, hasActiveFilters, load]);
 
-  // Reset page to 1 when filters/search/sort change
+  // When filters/search change:
+  // - reset to page 1
+  // - if serverPaginated and filters active, get full list once via /devices/raw for client-side filtering
   useEffect(() => {
     setPage(1);
-  }, [debouncedQ, type, status, sortKey, sortDir]);
+    async function maybeLoadRaw() {
+      if (serverPaginated && hasActiveFilters) {
+        try {
+          setLoading(true);
+          const raw = await listDevicesRaw();
+          setAllDevices(raw || []);
+          setTotal((raw || []).length);
+          // Switch effective mode to client-side for filtering/slicing
+          setServerPaginated(false);
+        } catch (e) {
+          const guidance = ' Check API base URL, backend availability, and CORS.';
+          addToast({ type: 'error', message: (e && e.message ? e.message : 'Failed to fetch full device list for filtering') + guidance });
+          // eslint-disable-next-line no-console
+          console.error('[Devices Raw Load Error]', e);
+        } finally {
+          setLoading(false);
+        }
+      }
+      if (!hasActiveFilters) {
+        // When filters cleared, reload baseline to honor server pagination if available
+        load(1, pageSize);
+      }
+    }
+    maybeLoadRaw();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ, type, status]);
 
-  // Filter + sort + client-side paginate (when server doesn't paginate)
+  // Filter + sort + client-side paginate (when using full list)
   const { currentPageItems, filteredCount } = useMemo(() => {
     const term = debouncedQ.trim().toLowerCase();
-    // If server paginated, assume allDevices are already filtered/paged server-side
-    if (serverPaginated) {
-      return { currentPageItems: allDevices, filteredCount: total };
+
+    // Build a list of safe comparable fields, normalizing undefined/null
+    const normalized = allDevices.map((d) => ({
+      ...d,
+      id: d.id ?? d._id,
+      name: d.name ?? '',
+      ip: d.ip ?? d.ip_address ?? '',
+      type: d.type ?? '',
+      location: d.location ?? '',
+      status: d.status ?? '',
+    }));
+
+    // If serverPaginated (and no active filters), use items as-is, but still support sort locally for UX consistency
+    if (serverPaginated && !hasActiveFilters) {
+      const sorted = [...normalized].sort((a, b) => {
+        const av = String(a[sortKey] ?? '').toLowerCase();
+        const bv = String(b[sortKey] ?? '').toLowerCase();
+        if (av < bv) return sortDir === 'asc' ? -1 : 1;
+        if (av > bv) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+      return { currentPageItems: sorted, filteredCount: total };
     }
 
-    let rows = allDevices.filter((d) => {
-      const termMatch = !term || [d.name, d.ip, d.location, d.type, d.status].some((v) => String(v).toLowerCase().includes(term));
+    // Client-side filtering path
+    let rows = normalized.filter((d) => {
+      const valuesForSearch = [d.name, d.ip, d.location, d.type];
+      const termMatch = !term || valuesForSearch.some((v) => v.toLowerCase().includes(term));
       const typeMatch = type === 'all' || d.type === type;
       const statusMatch = status === 'all' || d.status === status;
       return termMatch && typeMatch && statusMatch;
     });
+
     rows.sort((a, b) => {
       const av = String(a[sortKey] ?? '').toLowerCase();
       const bv = String(b[sortKey] ?? '').toLowerCase();
@@ -107,7 +159,7 @@ export default function DeviceList() {
     const sliced = rows.slice(start, end);
 
     return { currentPageItems: sliced, filteredCount: totalFiltered };
-  }, [allDevices, serverPaginated, total, debouncedQ, type, status, sortKey, sortDir, page, pageSize]);
+  }, [allDevices, serverPaginated, total, debouncedQ, type, status, sortKey, sortDir, page, pageSize, hasActiveFilters]);
 
   // Keep total in sync for client-side
   useEffect(() => {
@@ -121,19 +173,29 @@ export default function DeviceList() {
     try {
       await deleteDevice(id);
       addToast({ type: 'success', message: 'Device deleted' });
-      // reload current page; if client-side, just refetch baseline
-      await load(serverPaginated ? page : 1, pageSize);
+      if (hasActiveFilters) {
+        // Re-fetch raw list to keep filtering accurate
+        const raw = await listDevicesRaw();
+        setAllDevices(raw || []);
+        setTotal((raw || []).length);
+        setServerPaginated(false);
+        setPage(1);
+      } else {
+        await load(serverPaginated ? page : 1, pageSize);
+      }
     } catch (e) {
       const guidance = ' Check API base URL, backend availability, and CORS.';
       addToast({ type: 'error', message: (e && e.message ? e.message : 'Delete failed') + guidance });
       // eslint-disable-next-line no-console
       console.error('[Device Delete Error]', e);
     }
-  }, [addToast, load, page, pageSize, serverPaginated]);
+  }, [addToast, load, page, pageSize, serverPaginated, hasActiveFilters]);
 
   const onRowClick = useCallback((id) => navigate(`/devices/${id}`), [navigate]);
 
   if (loading) return <Spinner label="Loading devices..." />;
+
+  const showEmpty = total === 0;
 
   return (
     <section aria-labelledby="devices-heading">
@@ -165,7 +227,7 @@ export default function DeviceList() {
         onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
       />
 
-      {total === 0 && (
+      {showEmpty && (
         <p role="status" aria-live="polite" style={{ marginTop: 16 }}>No devices match your criteria.</p>
       )}
     </section>

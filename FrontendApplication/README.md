@@ -70,16 +70,18 @@ HTTPS previews:
   - Base URL for the backend API (e.g., http://localhost:3001).
   - For HTTPS previews, set this to the matching HTTPS backend origin at the same host:
     https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001
+  - Current configured example:
+    https://kavia-alb-417f4a5e-113462135.backend.kavia.app/
   - If omitted, the app will fallback to http://localhost:3001 when running at http://localhost:3000; otherwise, it uses same-origin.
   - Tip: If you set "localhost:3001" without protocol, the client will normalize it to "http://localhost:3001".
-  - After changing .env files, restart the frontend dev server/preview so the new environment variables take effect.
+  - Important: After changing .env files, you must restart the frontend dev server/preview so the new environment variables take effect.
 - REACT_APP_USE_MOCKS
   - When "true", the app uses an in-memory mock API instead of calling the backend.
   - Useful for UI-only development without a running backend.
 - REACT_APP_PAGINATION_PAGE_SIZE_DEFAULT
   - Integer default page size for the devices list pagination UI. Defaults to 10 if unset.
 
-A sample configuration is provided in .env.example. Copy it to .env (or .env.development.local) and adjust values. The app reads REACT_APP_API_BASE_URL to prefix all API requests via a centralized client (src/api/client.js).
+A sample configuration is provided in .env.example. Copy it to .env (or .env.development.local) and adjust values. The app reads REACT_APP_API_BASE_URL to prefix all API requests via a centralized client (src/api/client.js). The client normalizes trailing slashes automatically.
 
 CORS notes:
 - When frontend runs at http://localhost:3000 and backend at http://localhost:3001, CORS must be enabled on the backend.

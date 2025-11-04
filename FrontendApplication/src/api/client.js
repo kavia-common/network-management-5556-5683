@@ -9,6 +9,12 @@
  * Notes:
  *    - We normalize trailing slashes and ensure http(s) scheme is present when absolute.
  */
+/**
+ * PUBLIC_INTERFACE
+ * Environment configuration:
+ * - Reads process.env.REACT_APP_API_BASE_URL for the backend origin.
+ * - Trailing slashes are stripped; bare localhost:3001 will be normalized to http://localhost:3001.
+ */
 const rawEnvBase = (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.trim())
   ? process.env.REACT_APP_API_BASE_URL.trim()
   : '';

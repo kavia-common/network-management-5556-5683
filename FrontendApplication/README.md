@@ -96,12 +96,17 @@ If you migrate to Vite later, use VITE_API_BASE_URL, VITE_USE_MOCKS, and VITE_PA
 Note: If you update environment variables (like REACT_APP_API_BASE_URL), you must restart the frontend preview/dev server for changes to take effect. For this workspace, set:
   REACT_APP_API_BASE_URL=https://vscode-internal-32888-beta.beta01.cloud.kavia.ai:3001/
 
-Client wiring confirmation: The API client at src/api/client.js reads process.env.REACT_APP_API_BASE_URL and normalizes it (trailing slash is handled). No code changes needed.
+Client wiring confirmation: The API client at src/api/client.js reads process.env.REACT_APP_API_BASE_URL and normalizes it (trailing slash is handled). In development, it logs the resolved base URL in the DevTools console.
+
+How to verify in development:
+- Open the browser DevTools console and look for:
+  [DEV] API Base URL resolved to: https://vscode-internal-32888-beta.beta01.cloud.kavia.ai:3001
+- Optionally, a small badge labeled "API Base: ..." appears at the bottom-left of the app in development showing the same value.
 
 - Start backend on port 3001 (ensure Mongo is reachable and MONGO_URI is set).
 - Start frontend on port 3000 with the appropriate API base:
   - HTTP local: `REACT_APP_API_BASE_URL=http://localhost:3001`
-  - HTTPS preview (provided): `REACT_APP_API_BASE_URL=https://vscode-internal-28439-beta.beta01.cloud.kavia.ai:3001`
+  - HTTPS preview (provided): `REACT_APP_API_BASE_URL=https://vscode-internal-32888-beta.beta01.cloud.kavia.ai:3001/`
 - After updating .env, restart the frontend preview to apply the new base URL. In most environments, stopping and starting the preview (or re-running npm start) is required for env changes to take effect.
 - Quick verification endpoints:
   - GET /health/db should return a JSON object with status ok when DB connectivity is healthy.

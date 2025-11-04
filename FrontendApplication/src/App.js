@@ -6,6 +6,7 @@ import Header from './components/Layout/Header';
 import Container from './components/Layout/Container';
 import { ToastProvider } from './hooks/useToast';
 import Toast from './components/Common/Toast';
+import BaseUrlNotice from './components/Debug/BaseUrlNotice.jsx';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <RoutesRoot />
           </Container>
           <Toast />
+          {process.env.NODE_ENV !== 'production' ? <BaseUrlNotice /> : null}
         </div>
       </ToastProvider>
     </BrowserRouter>

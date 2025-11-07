@@ -18,18 +18,7 @@
     "eject": "react-scripts eject"
   },
   "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.js"
-    ],
-    "testMatch": [
-      "<rootDir>/src/**/*.test.(js|jsx|ts|tsx)",
-      "<rootDir>/tests/**/*.test.(js|jsx|ts|tsx)",
-      "<rootDir>/tests/**/*.integration.test.(js|jsx|ts|tsx)"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!(react-router|react-router-dom)/)"
-    ]
+    "testEnvironment": "jsdom"
   },
   "eslintConfig": {
     "extends": "react-app"

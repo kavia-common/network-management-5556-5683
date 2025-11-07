@@ -1,4 +1,4 @@
-import { http, getBaseURL } from '../../src/api/client';
+import { http, getBaseURL } from '../../../src/api/client';
 
 describe('api client', () => {
   beforeEach(() => {

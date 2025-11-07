@@ -1,7 +1,7 @@
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+
 import App from '../../src/App';
 
 // Helper to mock fetch at the network boundary.

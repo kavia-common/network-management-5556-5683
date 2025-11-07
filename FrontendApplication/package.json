@@ -18,6 +18,10 @@
     "eject": "react-scripts eject"
   },
   "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
     "testMatch": [
       "<rootDir>/src/**/*.test.(js|jsx|ts|tsx)",
       "<rootDir>/tests/**/*.test.(js|jsx|ts|tsx)",

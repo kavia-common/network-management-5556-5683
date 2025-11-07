@@ -161,6 +161,7 @@ How to verify in development:
 
 - npm start — start development server
 - npm test — run tests
+  - CI mode: CI=true npm test -- --watchAll=false
 - npm run build — production build
 
 ## License

@@ -3,7 +3,10 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/*.test.(js|jsx|ts|tsx)',
     '<rootDir>/tests/**/*.test.(js|jsx|ts|tsx)',
-    '<rootDir>/tests/**/*.integration.test.(js|jsx|ts|tsx)'
+    '<rootDir>/tests/**/*.integration.test.(js|jsx|ts|tsx)',
   ],
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'].filter(Boolean)
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'].filter(Boolean),
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-router|react-router-dom)/)',
+  ],
 };

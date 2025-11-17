@@ -71,9 +71,23 @@ export default function DeviceForm({ mode = 'create' }) {
         navigate(`/devices/${created.id}`);
       }
     } catch (e) {
-      const baseMsg = (e && e.data && e.data.message) || e.message || 'Save failed';
-      const guidance = ' Check API base URL, backend availability, and CORS.';
-      addToast({ type: 'error', message: baseMsg + guidance });
+      // Prefer backend-provided structured error details when available
+      let message = 'Save failed';
+      if (e && e.status === 409 && e.data && e.data.error) {
+        // Backend duplicate key contract: { error: { field: 'ip_address', message: 'already exists' } }
+        const { field, message: msg } = e.data.error;
+        message = `${field || 'Field'} ${msg || 'conflict'}`;
+      } else if (e && e.data && (e.data.message || e.data.error)) {
+        message = e.data.message || e.data.error;
+      } else if (e && e.message) {
+        message = e.message;
+      }
+
+      // Add connectivity guidance only for network-level failures (no HTTP status)
+      const needsGuidance = !e || typeof e.status === 'undefined';
+      const guidance = needsGuidance ? ' Check API base URL, backend availability, and CORS.' : '';
+
+      addToast({ type: 'error', message: message + guidance });
       // eslint-disable-next-line no-console
       console.error('[Device Save Error]', e);
     }
